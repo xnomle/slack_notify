@@ -9,5 +9,11 @@ wheels/
 # Virtual environments
 .venv
 
+# UV package manager
+.uv/
+uv.lock
+
 # Misc 
 .aws-sam
+archive/
+testing/
