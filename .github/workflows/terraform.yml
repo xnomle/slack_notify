@@ -7,16 +7,27 @@ on:
 
 permissions:
   contents: read
+  id-token: write
+
+defaults: 
+  run: 
+    working-directory: ./terraform
 
 jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
-
+    
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v6
+
+    - name: OIDC AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+            role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+            aws-region: ap-southeast-2
 
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
@@ -24,17 +35,17 @@ jobs:
   
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
-      run: terraform terraform/init
+      run: terraform init
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
-      run: terraform terraform/fmt -check
+      run: terraform fmt -check
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
-      run: terraform terraform/plan -input=false
+      run: terraform plan
 
       # On push to "main", build or change infrastructure according to Terraform configuration files
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
     - name: Terraform Apply
-      run: terraform apply -auto-approve -input=false
+      run: terraform apply -auto-approve
