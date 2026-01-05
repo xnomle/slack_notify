@@ -1,0 +1,73 @@
+name: 'Terraform'
+
+on:
+  pull_request:
+  push:
+    branches: [main]  
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+  actions: read
+  checks: write
+
+defaults: 
+  run: 
+    working-directory: ./terraform
+
+jobs:
+  terraform_plan:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: OIDC AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+            role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+            aws-region: ap-southeast-2
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+  
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt
+
+    - name: Terraform Plan
+      run: terraform plan -out tfplan
+
+    - name: Post PR comment
+      uses: borchero/terraform-plan-comment@v2.4.1
+      with:
+        token: ${{ github.token }}
+        planfile: "tfplan"
+        header: '📝 Terraform Plan'
+
+    - name: Generate artifact name
+      id: generate_artifact_name
+      run: |
+          # Generate a 12-character random hex string
+          UNIQUE_ID=$(openssl rand -hex 6)
+          ARTIFACT_NAME="tfplan-output-${UNIQUE_ID}"
+          echo "Generated artifact name: ${ARTIFACT_NAME}"
+          echo "artifact_name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
+
+    - name: Upload Terraform Plan artifact
+      id: upload_plan_artifact
+      uses: actions/upload-artifact@v4
+      with:
+          name: ${{ steps.generate_artifact_name.outputs.artifact_name }}
+          path: ./terraform/tfplan
+          if-no-files-found: error
+  
