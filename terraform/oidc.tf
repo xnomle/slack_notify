@@ -1,6 +1,6 @@
 resource "aws_iam_openid_connect_provider" "oidc_github_actions" {
-  url = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -12,7 +12,7 @@ resource "aws_iam_role" "github_actions" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.oidc_github_actions.arn 
+          Federated = aws_iam_openid_connect_provider.oidc_github_actions.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
