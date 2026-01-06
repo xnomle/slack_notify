@@ -9,8 +9,6 @@ permissions:
   contents: read
   id-token: write
   pull-requests: write
-  actions: read
-  checks: write
 
 defaults: 
   run: 
@@ -42,7 +40,7 @@ jobs:
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
-      run: terraform fmt
+      run: terraform fmt -check -recursive
 
     - name: Terraform Plan
       run: terraform plan -out tfplan
@@ -54,21 +52,3 @@ jobs:
         working-directory: "./terraform"
         planfile: "tfplan"
         header: '📝 Terraform Plan'
-
-    - name: Generate artifact name
-      id: generate_artifact_name
-      run: |
-          # Generate a 12-character random hex string
-          UNIQUE_ID=$(openssl rand -hex 6)
-          ARTIFACT_NAME="tfplan-output-${UNIQUE_ID}"
-          echo "Generated artifact name: ${ARTIFACT_NAME}"
-          echo "artifact_name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
-
-    - name: Upload Terraform Plan artifact
-      id: upload_plan_artifact
-      uses: actions/upload-artifact@v4
-      with:
-          name: ${{ steps.generate_artifact_name.outputs.artifact_name }}
-          path: ./terraform/tfplan
-          if-no-files-found: error
-  
