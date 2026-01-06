@@ -5,13 +5,10 @@ on:
   push:
     branches: [main]  
 
-
 permissions:
   contents: read
   id-token: write
   pull-requests: write
-  actions: read
-  checks: write
 
 defaults: 
   run: 
@@ -43,25 +40,15 @@ jobs:
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
-      run: terraform fmt
+      run: terraform fmt -check -recursive
 
-    - uses: op5dev/tf-via-pr@v13
+    - name: Terraform Plan
+      run: terraform plan -out tfplan
+
+    - name: Post PR comment
+      uses: borchero/terraform-plan-comment@v2.4.1
       with:
-        working-directory: ./terraform
-        command: plan
-
-  apply:
-    needs: terraform_plan
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment: production   
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - uses: hashicorp/setup-terraform@v3
-
-    - uses: op5dev/tf-via-pr@v13
-      with:
-        working-directory: ./terraform
-        command: apply
+        token: ${{ github.token }}
+        working-directory: "./terraform"
+        planfile: "tfplan"
+        header: '📝 Terraform Plan'

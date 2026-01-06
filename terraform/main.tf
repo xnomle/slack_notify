@@ -6,9 +6,9 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         	   = "slack-notify-project-tfstate"
-    key              	   = "state/terraform.tfstate"
-    region         	   = "ap-southeast-2"
+    bucket       = "slack-notify-project-tfstate"
+    key          = "state/terraform.tfstate"
+    region       = "ap-southeast-2"
     use_lockfile = true
   }
 }

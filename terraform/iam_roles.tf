@@ -2,7 +2,7 @@ locals {
   policy_arn = {
     AWSLambdaBasicExecutionRole    = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
     AWSLambdaSQSQueueExecutionRole = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
-    AmazonSSMReadOnlyAccess        = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess" 
+    AmazonSSMReadOnlyAccess        = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
   }
 }
 
